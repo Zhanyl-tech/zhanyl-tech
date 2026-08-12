@@ -1,12 +1,16 @@
+<p align="center">
+  <img src="./assets/architecture.svg" alt="ML platforms, and the agents that operate them — agentic operations over the Slurm control plane, with the open-source tools covering the lifecycle of a GPU allocation" width="100%">
+</p>
+
 ### Hi there, I'm Zhanyl 👋
 
 I build **ML platforms** — the compute layer research teams train, evaluate, and
 ship models on — and the **agent systems that operate them**.
 
 - 🔭 **Currently building:** [`slurm-rca-bench`](https://github.com/Zhanyl-tech/slurm-rca-bench), the first public incident-diagnosis benchmark for HPC schedulers, and [`cluster-sre-agent`](https://github.com/Zhanyl-tech/cluster-sre-agent), a multi-agent diagnosis system scored against it.
-- 🎓 **Education:** MS CS (Machine Learning) @ Georgia Tech · CQF (Quantitative Finance)
-- ⚡ **Core stack:** Python · Go · PyTorch · CUDA · Slurm · Kubernetes · MCP
-- 🖥 **Platform:** DCGM · MIG · NVLink/NVSwitch · InfiniBand/RoCE · Prometheus · Grafana
+- 🎓 **Education:** MS CS (Machine Learning) @ Georgia Tech · CQF (Quantitative Finance) · NVIDIA NCP-AIO
+- ⚡ **Core stack:** Python · Go · PyTorch · CUDA · Slurm · Kubernetes · MCP · LangGraph
+- 🖥 **Platform:** NVIDIA BCM · Run:ai · DCGM · MIG · NVLink/NVSwitch · DOCA/BlueField · InfiniBand/RoCE · Prometheus
 - 📈 **Focus:** GPU cluster infrastructure, inference optimization, and agentic operations
 
 [Website](https://zhanyl-tech.github.io) · [LinkedIn](https://www.linkedin.com/in/za-engineering/) · [X](https://x.com/ZhanylAbd)
