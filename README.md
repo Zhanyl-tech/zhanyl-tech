@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="./assets/architecture.svg" alt="ML platforms, and the agents that operate them — agentic operations over the Slurm control plane, with the open-source tools covering the lifecycle of a GPU allocation" width="100%">
-</p>
-
 ### Hi there, I'm Zhanyl 👋
 
 I build **ML platforms** — the compute layer research teams train, evaluate, and
@@ -14,6 +10,12 @@ ship models on — and the **agent systems that operate them**.
 - 📈 **Focus:** GPU cluster infrastructure, inference optimization, and agentic operations
 
 [Website](https://zhanyl-tech.github.io) · [LinkedIn](https://www.linkedin.com/in/za-engineering/) · [X](https://x.com/ZhanylAbd)
+
+---
+
+<p align="center">
+  <img src="./assets/architecture.svg" alt="ML platforms, and the agents that operate them — agentic operations over the Slurm control plane, with the open-source tools covering the lifecycle of a GPU allocation" width="100%">
+</p>
 
 ---
 
