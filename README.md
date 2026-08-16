@@ -1,21 +1,15 @@
 ### Hi there, I'm Zhanyl 👋
 
-I build **ML platforms** — the compute layer research teams train, evaluate, and
-ship models on — and the **agent systems that operate them**.
+I build the systems that allocate scarce, expensive, heterogeneous compute —
+and the benchmarks that prove whether they actually work.
 
-- 🔭 **Currently building:** [`slurm-rca-bench`](https://github.com/Zhanyl-tech/slurm-rca-bench), the first public incident-diagnosis benchmark for HPC schedulers, and [`cluster-sre-agent`](https://github.com/Zhanyl-tech/cluster-sre-agent), a multi-agent diagnosis system scored against it.
+- 🔭 **Currently building:** [`slurm-rca-bench`](https://github.com/Zhanyl-tech/slurm-rca-bench), the first public incident-diagnosis benchmark for HPC schedulers, and [`cluster-sre-agent`](https://github.com/Zhanyl-tech/cluster-sre-agent), a multi-agent diagnosis system scored against it — built on MCP and LangGraph.
 - 🎓 **Education:** MS CS (Machine Learning) @ Georgia Tech · CQF (Quantitative Finance) · NVIDIA NCP-AIO
-- ⚡ **Core stack:** Python · Go · PyTorch · CUDA · Slurm · Kubernetes · MCP · LangGraph
-- 🖥 **Platform:** NVIDIA BCM · Run:ai · DCGM · MIG · NVLink/NVSwitch · DOCA/BlueField · InfiniBand/RoCE · Prometheus
-- 📈 **Focus:** GPU cluster infrastructure, inference optimization, and agentic operations
+- ⚡ **Core stack:** Python, Go, PyTorch, CUDA, Slurm, Kubernetes
+- 🖥 **Platform:** NVIDIA BCM · Run:ai · DCGM · MIG · NVLink/NVSwitch · DOCA/BlueField · InfiniBand · Prometheus
+- 📈 **Focus:** scheduling and resource allocation, GPU cluster reliability, inference infrastructure, and agentic operations
 
 [Website](https://zhanyl-tech.github.io) · [LinkedIn](https://www.linkedin.com/in/za-engineering/) · [X](https://x.com/ZhanylAbd)
-
----
-
-<p align="center">
-  <img src="./assets/architecture.svg" alt="ML platforms, and the agents that operate them — agentic operations over the Slurm control plane, with the open-source tools covering the lifecycle of a GPU allocation" width="100%">
-</p>
 
 ---
 
@@ -54,6 +48,12 @@ script reported success on a cluster that could not run a job.
 
 ---
 
+<p align="center">
+  <img src="./assets/architecture.svg" alt="ML platforms, and the agents that operate them — agentic operations over the Slurm control plane, with the open-source tools covering the lifecycle of a GPU allocation" width="100%">
+</p>
+
+---
+
 ### 🛠 Open source
 
 Five tools covering the lifecycle of a GPU allocation, plus the benchmark and
@@ -71,8 +71,10 @@ evidence.**
 | **[slinky-gitops](https://github.com/Zhanyl-tech/slinky-gitops)** | Slurm on Kubernetes via SchedMD's Slinky, including the auth-key rotation nobody wants to test in production. |
 | **[research-platform](https://github.com/Zhanyl-tech/research-platform)** | Point-in-time data semantics for quantitative research — as-of queries, feature lineage, and leakage detection. Production Python. |
 
-More in progress — a multi-agent cluster diagnosis system and CUDA volatility
-surface calibration. They go public as they get good enough to defend.
+More in progress — a Kubernetes GPU scheduler comparison built on kwok, the
+remaining agent configurations for `cluster-sre-agent`, and a CUDA port of a
+volatility surface calibration. They go public as they get good enough to
+defend.
 
 ### ✍️ Writing
 
