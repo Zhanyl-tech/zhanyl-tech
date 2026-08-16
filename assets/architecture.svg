@@ -32,8 +32,8 @@
   <!-- ── header ─────────────────────────────────────────────────────── -->
   <text class="mono t-mark" x="42" y="58">18</text>
   <text class="mono t-mark-s" x="76" y="46">∞</text>
-  <text class="mono t-title" x="104" y="56">ML platforms, and the agents that operate them</text>
-  <text class="mono t-sub" x="104" y="78">GPU cluster infrastructure · Slurm · Kubernetes · agentic operations</text>
+  <text class="mono t-title" x="104" y="56">Allocating scarce compute — and proving it worked</text>
+  <text class="mono t-sub" x="104" y="78">Scheduling · GPU cluster reliability · benchmarks · agentic operations</text>
   <rect x="42" y="98" width="1116" height="1" fill="url(#glow)"/>
 
   <!-- ── band 1: agentic operations ─────────────────────────────────── -->
