@@ -3,11 +3,11 @@
 I build the systems that allocate scarce, expensive, heterogeneous compute —
 and the benchmarks that prove whether they actually work.
 
-- 🔭 **Currently building:** [`slurm-rca-bench`](https://github.com/Zhanyl-tech/slurm-rca-bench), the first public incident-diagnosis benchmark for HPC schedulers, and [`cluster-sre-agent`](https://github.com/Zhanyl-tech/cluster-sre-agent), a multi-agent diagnosis system scored against it — built on MCP and LangGraph.
+- 🔭 **Currently building:** [`k8s-gpu-scheduler-lab`](https://github.com/Zhanyl-tech/k8s-gpu-scheduler-lab), a controlled comparison of Kubernetes GPU schedulers on identical traces, and [`cluster-sre-agent`](https://github.com/Zhanyl-tech/cluster-sre-agent), a multi-agent diagnosis system scored against [`slurm-rca-bench`](https://github.com/Zhanyl-tech/slurm-rca-bench) — built on MCP and LangGraph.
 - 🎓 **Education:** MS CS (Machine Learning) @ Georgia Tech · CQF (Quantitative Finance) · NVIDIA NCP-AIO
-- ⚡ **Core stack:** Python, Go, PyTorch, CUDA, Slurm, Kubernetes
+- ⚡ **Core stack:** Python, Go, PyTorch, CUDA, Kubernetes, Slurm
 - 🖥 **Platform:** NVIDIA BCM · Run:ai · DCGM · MIG · NVLink/NVSwitch · DOCA/BlueField · InfiniBand · Prometheus
-- 📈 **Focus:** scheduling and resource allocation, GPU cluster reliability, inference infrastructure, and agentic operations
+- 📈 **Focus:** scheduling and resource allocation across Slurm and Kubernetes, GPU cluster reliability, inference infrastructure, and agentic operations
 
 [Website](https://zhanyl-tech.github.io) · [LinkedIn](https://www.linkedin.com/in/za-engineering/) · [X](https://x.com/ZhanylAbd)
 
@@ -62,7 +62,7 @@ evidence.**
 
 | | |
 |---|---|
-| **[slurm-rca-bench](https://github.com/Zhanyl-tech/slurm-rca-bench)** | The first public incident-diagnosis benchmark for HPC schedulers. 10 scenarios, 2 deliberately undiagnosable, scored with partial credit against degenerate baselines. |
+| **[slurm-rca-bench](https://github.com/Zhanyl-tech/slurm-rca-bench)** | A public incident-diagnosis benchmark for HPC schedulers. 10 scenarios, 2 deliberately undiagnosable, scored with partial credit against degenerate baselines. |
 | **[cluster-sre-agent](https://github.com/Zhanyl-tech/cluster-sre-agent)** | Multi-agent cluster diagnosis, built as five ablatable configs so the dependency graph's contribution is measured rather than asserted. |
 | **[slurm-scheduler-lab](https://github.com/Zhanyl-tech/slurm-scheduler-lab)** | Test Slurm priority and backfill policy against a real `sacct` trace before it reaches a live controller. |
 | **[gpu-reaper](https://github.com/Zhanyl-tech/gpu-reaper)** | Reclaim idle GPU allocations, observe-by-default. A telemetry outage can never cancel a job. |
