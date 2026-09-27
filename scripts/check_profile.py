@@ -23,8 +23,9 @@ Why each check exists:
              be edited apart.
 
 Standard library only (tomllib needs Python 3.11+). Exit status 1 on any
-failure. Hosts that block automated requests (LinkedIn) produce a warning, not
-a pass: the link is reported as unverified.
+failure. Hosts that block automated requests (LinkedIn, X) produce a warning,
+not a pass, when they answer with their blocking status: the link is reported
+as unverified. Any other status from them, a 404 say, still fails.
 """
 
 from __future__ import annotations
@@ -45,9 +46,18 @@ ROOT = Path(__file__).resolve().parent.parent
 README = ROOT / "README.md"
 CLAIMS = ROOT / "claims.toml"
 USER_AGENT = "Mozilla/5.0 (compatible; zhanyl-tech-profile-check)"
-# Hosts known to refuse automated clients whatever the page state (LinkedIn
-# answers 999 or 405). A failure there is reported as unverified, not broken.
-BOT_BLOCKING_HOSTS = {"www.linkedin.com", "linkedin.com"}
+# Hosts known to refuse automated clients whatever the page state, with the
+# status codes they refuse them with. Only those codes are reported as
+# unverified; anything else there (a 404, a timeout) fails like any other link.
+# A host covers its subdomains, so www.linkedin.com is linkedin.com.
+BOT_BLOCKING_HOSTS: dict[str, frozenset[int]] = {
+    "linkedin.com": frozenset({999, 405}),
+    # X answers 403 to GitHub's hosted runners (datacenter addresses) for a
+    # profile that answers 200 from a home connection. twitter.com redirects
+    # to x.com, so it gets the same answer.
+    "x.com": frozenset({403}),
+    "twitter.com": frozenset({403}),
+}
 # The ref links and claims are read at. raw.githubusercontent.com resolves HEAD
 # to the repo's default branch, the one github.com/<owner>/<repo> shows. A
 # pinned SHA from claims.toml [refs] is deliberately not used here: a frozen
@@ -131,6 +141,16 @@ def github_slugs(markdown: str) -> set[str]:
     return slugs
 
 
+def bot_blocked(hostname: str | None, status: int) -> bool:
+    """Whether `status` is the answer `hostname` gives every automated client,
+    so it says nothing about the page."""
+    host = (hostname or "").lower()
+    return any(
+        status in codes and (host == domain or host.endswith(f".{domain}"))
+        for domain, codes in BOT_BLOCKING_HOSTS.items()
+    )
+
+
 def readme_links(text: str) -> list[str]:
     links = re.findall(r"\]\(([^)\s]+)\)", text)
     links += re.findall(r'(?:src|href)="([^"]+)"', text)
@@ -152,7 +172,7 @@ def check_links(cfg: dict, local: Path | None) -> None:
             (ok if (local / repo).is_dir() else fail)(f"{link} (local checkout)")
         else:
             status, body = fetch(url)
-            if parsed.hostname in BOT_BLOCKING_HOSTS and status != 200:
+            if bot_blocked(parsed.hostname, status):
                 warn(f"{link}: HTTP {status} (host blocks automated clients; unverified)")
                 continue
             if not 200 <= status < 400:
