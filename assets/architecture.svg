@@ -1,23 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img"
-     aria-label="Architecture: an agentic operations layer diagnosing the Slurm control plane, with seven open-source tools attached to the stages they act on.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="672" viewBox="0 0 1200 672" role="img"
+     aria-labelledby="t d">
+  <title id="t">GPU cluster scheduling and fleet health, Slurm and Kubernetes: what is built, and what was measured</title>
+  <desc id="d">Four bands. Scheduling evaluation: slurm-scheduler-lab, built, a reference model; k8s-gpu-scheduler-lab, partial, with K0 and four degenerate baselines built and Kueue, Volcano and KAI planned; the two share a trace, a fleet and fragmentation definition C. GPU fleet health: gpu-reaper, epilog-gpu-validator and ib-slurm-exporter built but not yet run on a cluster or hardware, slinky-gitops partial with a rotation that fails safe. The Slurm control plane as measured in slurm-rca-bench on Slurm 25.11.4 in Docker: shared filesystem to accounting database is inferred; accounting database to slurmdbd halts, measured; slurmdbd to slurmctld only degrades, measured; slurmctld to scheduling halts, documented; an unwritable StateSaveLocation rejected the one submission tried, measured once. Agentic operations: slurm-rca-bench partial, slurm-mcp and cluster-ops-skills built, cluster-sre-agent partial with its agent loop planned. Legend: on control-plane edges, solid means measured and dashed means documented or inferred; the dotted link between the two labs means shared inputs, not a measurement; a dashed box border means the agent itself is not built.</desc>
   <defs>
     <style>
       .mono { font-family: 'JetBrains Mono','SF Mono',Menlo,Consolas,monospace; }
-      .t-title  { font-size: 26px; font-weight: 600; fill: #e9eff5; letter-spacing: 0.5px; }
+      .t-title  { font-size: 24px; font-weight: 600; fill: #e9eff5; letter-spacing: 0.3px; }
       .t-sub    { font-size: 13px; fill: #828c98; }
       .t-band   { font-size: 11px; fill: #7d8894; letter-spacing: 2.2px; }
       .t-node   { font-size: 13px; font-weight: 500; fill: #e9eff5; }
       .t-desc   { font-size: 10.5px; fill: #98a3b0; }
       .t-chain  { font-size: 12px; font-weight: 500; fill: #cdd6df; }
       .t-edge   { font-size: 10px; fill: #7d8894; letter-spacing: 0.6px; }
-      .t-mark   { font-size: 30px; font-weight: 500; fill: #f5b544; }
-      .t-mark-s { font-size: 15px; font-weight: 500; fill: #f5b544; }
+      /* Status colours are classes declared after .t-desc/.t-edge on purpose.
+         A fill="..." presentation attribute loses to any CSS rule, which is why
+         the previous banner rendered every highlight grey; a later class of
+         equal specificity wins instead. */
+      .built    { fill: #3fb950; }
+      .partial  { fill: #f5b544; }
+      .measured { fill: #58a6ff; }
+      .degrades { fill: #f5b544; }
     </style>
     <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
       <path d="M0,0 L7,3 L0,6 z" fill="#58a6ff"/>
     </marker>
     <marker id="ar-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
       <path d="M0,0 L7,3 L0,6 z" fill="#f5b544"/>
+    </marker>
+    <marker id="ar-g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 z" fill="#7d8894"/>
     </marker>
     <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%"   stop-color="#f5b544" stop-opacity="0.00"/>
@@ -26,111 +37,160 @@
     </linearGradient>
   </defs>
 
-  <rect width="1200" height="600" rx="14" fill="#141a23"/>
-  <rect x="0.5" y="0.5" width="1199" height="599" rx="14" fill="none" stroke="#243040"/>
+  <rect width="1200" height="672" rx="14" fill="#141a23"/>
+  <rect x="0.5" y="0.5" width="1199" height="671" rx="14" fill="none" stroke="#243040"/>
 
   <!-- ── header ─────────────────────────────────────────────────────── -->
-  <text class="mono t-mark" x="42" y="58">18</text>
-  <text class="mono t-mark-s" x="76" y="46">∞</text>
-  <text class="mono t-title" x="104" y="56">Allocating scarce compute — and proving it worked</text>
-  <text class="mono t-sub" x="104" y="78">Scheduling · GPU cluster reliability · benchmarks · agentic operations</text>
-  <rect x="42" y="98" width="1116" height="1" fill="url(#glow)"/>
+  <text class="mono t-title" x="42" y="56">GPU cluster scheduling and fleet health — Slurm and Kubernetes</text>
+  <text class="mono t-sub" x="42" y="80">a status on every box · measured, documented or inferred on every control-plane edge</text>
+  <rect x="42" y="96" width="1116" height="1" fill="url(#glow)"/>
 
-  <!-- ── band 1: agentic operations ─────────────────────────────────── -->
-  <text class="mono t-band" x="42" y="132">AGENTIC OPERATIONS</text>
+  <!-- ── band 1: scheduling evaluation ─────────────────────────────── -->
+  <text class="mono t-band" x="42" y="128">SCHEDULING EVALUATION — SAME TRACE, SAME FLEET</text>
 
   <g>
-    <rect x="222" y="146" width="290" height="60" rx="8" fill="#1b2431" stroke="#f5b544" stroke-opacity="0.55"/>
-    <text class="mono t-node" x="240" y="172">slurm-rca-bench</text>
-    <text class="mono t-desc" x="240" y="190">10 scenarios · 2 undiagnosable · partial credit</text>
+    <rect x="42" y="140" width="500" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.45"/>
+    <text class="mono t-node" x="60" y="166">slurm-scheduler-lab</text>
+    <text class="mono t-desc" x="60" y="184">multifactor priority · Fair Tree · backfill · preemption</text>
+    <text class="mono t-desc built" x="60" y="200">BUILT · reference model, synthetic and sacct traces</text>
   </g>
 
   <g>
-    <rect x="688" y="146" width="290" height="60" rx="8" fill="#1b2431" stroke="#f5b544" stroke-opacity="0.55"/>
-    <text class="mono t-node" x="706" y="172">cluster-sre-agent</text>
-    <text class="mono t-desc" x="706" y="190">5 ablatable configs · A → E</text>
+    <rect x="658" y="140" width="500" height="72" rx="8" fill="#1b2431" stroke="#f5b544" stroke-opacity="0.55"/>
+    <text class="mono t-node" x="676" y="166">k8s-gpu-scheduler-lab</text>
+    <text class="mono t-desc" x="676" y="184">kind + kwok · real control plane, simulated GPU nodes</text>
+    <text class="mono t-desc partial" x="676" y="200">PARTIAL · K0 + 4 baselines built · Kueue, Volcano, KAI planned</text>
   </g>
 
-  <line x1="512" y1="176" x2="682" y2="176" stroke="#f5b544" stroke-opacity="0.7" stroke-width="1.4" marker-end="url(#ar-a)"/>
-  <text class="mono t-edge" x="556" y="168">scores</text>
+  <!-- Shared inputs (a trace format, a fleet, fragmentation definition C pinned
+       by a common golden test vector), not a measurement: no S0-versus-K0
+       comparison exists. Dotted and without arrowheads so it cannot read as a
+       solid, i.e. measured, edge under the legend. -->
+  <line x1="552" y1="176" x2="648" y2="176" stroke="#7d8894" stroke-width="1.4"
+        stroke-dasharray="0.1 4" stroke-linecap="round"/>
+  <text class="mono t-edge" x="600" y="168" text-anchor="middle">same trace</text>
+  <text class="mono t-edge" x="600" y="194" text-anchor="middle">fleet, frag C</text>
 
-  <!-- diagnosis arrow down into the control plane -->
-  <line x1="833" y1="206" x2="833" y2="268" stroke="#f5b544" stroke-opacity="0.45" stroke-width="1.2"
-        stroke-dasharray="4 4" marker-end="url(#ar-a)"/>
-  <text class="mono t-edge" x="845" y="242">diagnoses</text>
-
-  <!-- ── band 2: slurm control plane ─────────────────────────────────── -->
-  <text class="mono t-band" x="42" y="300">SLURM CONTROL PLANE — small, static, identical at every site</text>
-
-  <g>
-    <rect x="42" y="316" width="1116" height="74" rx="10" fill="#111823" stroke="#243040"/>
-
-    <rect x="66"  y="338" width="176" height="32" rx="6" fill="#16202c" stroke="#2c3a4c"/>
-    <text class="mono t-chain" x="94"  y="359">shared FS</text>
-
-    <rect x="278" y="338" width="176" height="32" rx="6" fill="#16202c" stroke="#2c3a4c"/>
-    <text class="mono t-chain" x="300" y="359">accounting DB</text>
-
-    <rect x="490" y="338" width="176" height="32" rx="6" fill="#16202c" stroke="#2c3a4c"/>
-    <text class="mono t-chain" x="528" y="359">slurmdbd</text>
-
-    <rect x="702" y="338" width="176" height="32" rx="6" fill="#16202c" stroke="#2c3a4c"/>
-    <text class="mono t-chain" x="738" y="359">slurmctld</text>
-
-    <rect x="914" y="338" width="220" height="32" rx="6" fill="#16202c" stroke="#2c3a4c"/>
-    <text class="mono t-chain" x="962" y="359">scheduling</text>
-
-    <line x1="242" y1="354" x2="272" y2="354" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#ar)"/>
-    <line x1="454" y1="354" x2="484" y2="354" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#ar)"/>
-    <line x1="666" y1="354" x2="696" y2="354" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#ar)"/>
-    <line x1="878" y1="354" x2="908" y2="354" stroke="#58a6ff" stroke-width="1.3" marker-end="url(#ar)"/>
-  </g>
-
-  <!-- measured-refutation callout -->
-  <text class="mono t-desc" x="42" y="412" fill="#f5b544">
-    measured: a stalled accounting path does NOT halt scheduling — the folk model is wrong
-  </text>
-
-  <!-- ── band 3: the tools ──────────────────────────────────────────── -->
-  <text class="mono t-band" x="42" y="452">OPEN SOURCE — the lifecycle of a GPU allocation</text>
-
+  <!-- ── band 2: GPU fleet health ───────────────────────────────────── -->
+  <text class="mono t-band" x="42" y="248">GPU FLEET HEALTH — NEVER ACT ON ABSENT EVIDENCE</text>
 
   <g>
-    <rect x="42" y="466" width="200" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.40"/>
-    <text class="mono t-node" x="58" y="492">scheduler-lab</text>
-    <text class="mono t-desc" x="58" y="510">policy, before it ships</text>
-    <text class="mono t-desc" x="58" y="526" fill="#3fb950">util 72.2% → 83.6%</text>
+    <rect x="42" y="260" width="264" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.45"/>
+    <text class="mono t-node" x="58" y="286">gpu-reaper</text>
+    <text class="mono t-desc" x="58" y="304">idle GPUs during a job</text>
+    <text class="mono t-desc built" x="58" y="320">BUILT · not run on a cluster yet</text>
   </g>
 
   <g>
-    <rect x="264" y="466" width="200" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.40"/>
-    <text class="mono t-node" x="280" y="492">gpu-reaper</text>
-    <text class="mono t-desc" x="280" y="510">waste during a job</text>
-    <text class="mono t-desc" x="280" y="526" fill="#3fb950">observe by default</text>
+    <rect x="326" y="260" width="264" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.45"/>
+    <text class="mono t-node" x="342" y="286">epilog-gpu-validator</text>
+    <text class="mono t-desc" x="342" y="304">GPU faults between jobs</text>
+    <text class="mono t-desc built" x="342" y="320">BUILT · not on hardware yet</text>
   </g>
 
   <g>
-    <rect x="486" y="466" width="200" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.40"/>
-    <text class="mono t-node" x="502" y="492">ib-slurm-exporter</text>
-    <text class="mono t-desc" x="502" y="510">fabric → the job</text>
-    <text class="mono t-desc" x="502" y="526" fill="#3fb950">InfiniBand / RoCE</text>
+    <rect x="610" y="260" width="264" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.45"/>
+    <text class="mono t-node" x="626" y="286">ib-slurm-exporter</text>
+    <text class="mono t-desc" x="626" y="304">fabric counters → the job</text>
+    <text class="mono t-desc built" x="626" y="320">BUILT · synthetic sysfs only</text>
   </g>
 
   <g>
-    <rect x="708" y="466" width="200" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.40"/>
-    <text class="mono t-node" x="724" y="492">epilog-validator</text>
-    <text class="mono t-desc" x="724" y="510">faults between jobs</text>
-    <text class="mono t-desc" x="724" y="526" fill="#3fb950">never on ignorance</text>
+    <rect x="894" y="260" width="264" height="72" rx="8" fill="#1b2431" stroke="#f5b544" stroke-opacity="0.55"/>
+    <text class="mono t-node" x="910" y="286">slinky-gitops</text>
+    <text class="mono t-desc" x="910" y="304">Slurm 26.05 on Kubernetes (kind)</text>
+    <text class="mono t-desc partial" x="910" y="320">PARTIAL · rotation fails safe</text>
+  </g>
+
+  <!-- ── band 3: the Slurm control plane, as measured ─────────────────
+       Drawn from cluster-sre-agent's graph (csa/graph.py), not from the folk
+       chain. The previous banner drew five identical solid arrows, i.e. the
+       chain the measurement refuted. -->
+  <text class="mono t-band" x="42" y="366">SLURM CONTROL PLANE — AS MEASURED IN SLURM-RCA-BENCH (25.11.4, DOCKER)</text>
+
+  <g>
+    <rect x="42" y="378" width="1116" height="118" rx="10" fill="#111823" stroke="#243040"/>
+
+    <rect x="66"  y="394" width="136" height="30" rx="6" fill="#16202c" stroke="#2c3a4c"/>
+    <text class="mono t-chain" x="134" y="414" text-anchor="middle">shared FS</text>
+
+    <rect x="299" y="394" width="136" height="30" rx="6" fill="#16202c" stroke="#2c3a4c"/>
+    <text class="mono t-chain" x="367" y="414" text-anchor="middle">accounting DB</text>
+
+    <rect x="532" y="394" width="136" height="30" rx="6" fill="#16202c" stroke="#2c3a4c"/>
+    <text class="mono t-chain" x="600" y="414" text-anchor="middle">slurmdbd</text>
+
+    <rect x="765" y="394" width="136" height="30" rx="6" fill="#16202c" stroke="#2c3a4c"/>
+    <text class="mono t-chain" x="833" y="414" text-anchor="middle">slurmctld</text>
+
+    <rect x="998" y="394" width="136" height="30" rx="6" fill="#16202c" stroke="#2c3a4c"/>
+    <text class="mono t-chain" x="1066" y="414" text-anchor="middle">scheduling</text>
+
+    <!-- shared FS → DB: inferred, never observed (no filesystem was stalled) -->
+    <line x1="204" y1="409" x2="291" y2="409" stroke="#7d8894" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar-g)"/>
+    <text class="mono t-edge" x="250" y="401" text-anchor="middle">halts</text>
+    <text class="mono t-edge" x="250" y="424" text-anchor="middle">inferred</text>
+
+    <!-- DB → slurmdbd: measured (S01, sacct blocks without an error) -->
+    <line x1="437" y1="409" x2="524" y2="409" stroke="#58a6ff" stroke-width="1.4" marker-end="url(#ar)"/>
+    <text class="mono t-edge" x="483" y="401" text-anchor="middle">halts</text>
+    <text class="mono t-edge measured" x="483" y="424" text-anchor="middle">measured</text>
+
+    <!-- slurmdbd → slurmctld: measured to degrade only; this is the refutation -->
+    <line x1="670" y1="409" x2="757" y2="409" stroke="#f5b544" stroke-width="1.6" marker-end="url(#ar-a)"/>
+    <text class="mono t-edge degrades" x="716" y="401" text-anchor="middle">degrades only</text>
+    <text class="mono t-edge measured" x="716" y="424" text-anchor="middle">measured</text>
+
+    <!-- slurmctld → scheduling: documented (a controller that is down cannot schedule) -->
+    <line x1="903" y1="409" x2="990" y2="409" stroke="#7d8894" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar-g)"/>
+    <text class="mono t-edge" x="949" y="401" text-anchor="middle">halts</text>
+    <text class="mono t-edge" x="949" y="424" text-anchor="middle">documented</text>
+
+    <!-- StateSaveLocation → slurmctld: measured (S06), an error rather than a stall -->
+    <rect x="748" y="452" width="170" height="30" rx="6" fill="#16202c" stroke="#2c3a4c"/>
+    <text class="mono t-chain" x="833" y="472" text-anchor="middle">StateSaveLocation</text>
+    <line x1="833" y1="450" x2="833" y2="431" stroke="#58a6ff" stroke-width="1.4" marker-end="url(#ar)"/>
+    <text class="mono t-edge" x="930" y="465">rejected the one submission tried</text>
+    <text class="mono t-edge measured" x="930" y="479">measured once (unwritable)</text>
+
+    <text class="mono t-desc" x="66" y="458">a path is only as strong as its weakest edge:</text>
+    <text class="mono t-desc" x="66" y="474">a frozen DB degrades scheduling, it does not halt it</text>
+  </g>
+
+  <!-- ── band 4: agentic operations ─────────────────────────────────── -->
+  <text class="mono t-band" x="42" y="530">AGENTIC OPERATIONS — READ-ONLY FIRST</text>
+
+  <g>
+    <rect x="42" y="542" width="264" height="72" rx="8" fill="#1b2431" stroke="#f5b544" stroke-opacity="0.55"/>
+    <text class="mono t-node" x="58" y="568">slurm-rca-bench</text>
+    <text class="mono t-desc" x="58" y="586">10 scenarios · 6 runnable</text>
+    <text class="mono t-desc partial" x="58" y="602">PARTIAL · leaderboard empty</text>
   </g>
 
   <g>
-    <rect x="930" y="466" width="228" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.40"/>
-    <text class="mono t-node" x="946" y="492">slinky-gitops</text>
-    <text class="mono t-desc" x="946" y="510">Slurm on Kubernetes</text>
-    <text class="mono t-desc" x="946" y="526" fill="#3fb950">auth-key rotation</text>
+    <rect x="326" y="542" width="264" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.45"/>
+    <text class="mono t-node" x="342" y="568">slurm-mcp</text>
+    <text class="mono t-desc" x="342" y="586">read-only, allowlist in code</text>
+    <text class="mono t-desc built" x="342" y="602">BUILT · fixtures only</text>
   </g>
 
-  <text class="mono t-desc" x="42" y="568" fill="#7d8894">
-    one rule throughout — never act on absent evidence · a telemetry gap is a collector fault, not an idle GPU
-  </text>
+  <g>
+    <rect x="610" y="542" width="264" height="72" rx="8" fill="#1b2431" stroke="#3fb950" stroke-opacity="0.45"/>
+    <text class="mono t-node" x="626" y="568">cluster-ops-skills</text>
+    <text class="mono t-desc" x="626" y="586">11 runbooks + validator</text>
+    <text class="mono t-desc built" x="626" y="602">BUILT · not scored</text>
+  </g>
+
+  <!-- dashed border: the agent itself is not built -->
+  <g>
+    <rect x="894" y="542" width="264" height="72" rx="8" fill="#1b2431" stroke="#f5b544" stroke-opacity="0.55" stroke-dasharray="5 4"/>
+    <text class="mono t-node" x="910" y="568">cluster-sre-agent</text>
+    <text class="mono t-desc" x="910" y="586">graph: 12 edges, 4 measured</text>
+    <text class="mono t-desc partial" x="910" y="602">PARTIAL · agent loop planned</text>
+  </g>
+
+  <!-- Every line style and border style used above has a legend entry, so none
+       of them borrows the meaning of another. -->
+  <text class="mono t-desc" x="42" y="640">control-plane edges: solid = measured · dashed = documented or inferred</text>
+  <text class="mono t-desc" x="42" y="656">dotted = shared inputs, not a measurement · dashed box = the agent itself is not built · no number in this banner comes from a GPU</text>
 </svg>

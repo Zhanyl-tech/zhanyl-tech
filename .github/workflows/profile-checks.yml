@@ -1,0 +1,107 @@
+name: profile-checks
+
+# The profile is the most-viewed page in this account, and its numbers and
+# statuses are copied from other repos. This workflow fails when a link or a
+# deep anchor breaks, when a claim listed in claims.toml stops matching its
+# source, or when a reproduced number changes. README text with no entry in
+# claims.toml is not checked.
+#
+# Drift mostly happens elsewhere: the other repos change without touching this
+# one, and GitHub answers HTTP 200 for a missing #anchor, so nothing else would
+# notice. Two triggers exist for that:
+#   - repository_dispatch (event type "source-changed"), sent by a linked
+#     repo's CI after a push to its main branch. The docs state the 60-day
+#     inactivity rule below for scheduled workflows, and this file has no
+#     schedule.
+#   - profile-checks-weekly.yml, a weekly schedule that calls this workflow. In
+#     a public repository "scheduled workflows are automatically disabled when
+#     no repository activity has occurred in 60 days"
+#     (https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/disabling-and-enabling-a-workflow).
+#     A profile repo can easily go 60 days without a commit, so the schedule is
+#     kept in its own file: when GitHub disables it, the triggers here keep
+#     working. Re-enable it from the Actions tab or with
+#     `gh workflow enable profile-checks-weekly.yml`.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+  # OWNER: nothing sends this yet. Each linked repo's CI needs a step that runs
+  # on push to main and calls POST /repos/Zhanyl-tech/zhanyl-tech/dispatches
+  # with {"event_type": "source-changed"}, using a token stored as a secret in
+  # that repo. The REST docs say a classic personal access token needs the
+  # `repo` scope; the fine-grained permission it needs is unverified.
+  repository_dispatch:
+    types: [source-changed]
+
+permissions:
+  contents: read
+
+jobs:
+  links-and-claims:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: The checker's own tests
+        run: python -m unittest discover -s tests -v
+      - name: The banner is well-formed XML
+        run: python -c "import xml.dom.minidom as m; m.parse('assets/architecture.svg')"
+      - name: Links resolve and deep anchors exist (default branches)
+        run: python scripts/check_profile.py links
+      - name: Listed claims still match their sources (default branches)
+        run: python scripts/check_profile.py claims
+
+  # Which slurm-scheduler-lab commits to re-derive the numbers at: always the
+  # default branch (what a reader who installs the lab gets), plus the commit
+  # claims.toml pins, if any (the one the numbers were taken from).
+  reproduce-refs:
+    runs-on: ubuntu-latest
+    outputs:
+      refs: ${{ steps.refs.outputs.refs }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - id: refs
+        run: |
+          python - >> "$GITHUB_OUTPUT" <<'EOF'
+          import json, tomllib
+          with open("claims.toml", "rb") as f:
+              pinned = tomllib.load(f).get("refs", {}).get("slurm-scheduler-lab", "")
+          print("refs=" + json.dumps(["default-branch"] + ([pinned] if pinned else [])))
+          EOF
+
+  # Numbers that exist only as the output of a seed loop are re-derived here.
+  reproduce:
+    needs: reproduce-refs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ref: ${{ fromJSON(needs.reproduce-refs.outputs.refs) }}
+    name: reproduce (slurm-scheduler-lab ${{ matrix.ref }})
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Zhanyl-tech/slurm-scheduler-lab
+          # An empty ref makes actions/checkout use the default branch of a
+          # repository other than the one running the workflow.
+          ref: ${{ matrix.ref != 'default-branch' && matrix.ref || '' }}
+          path: slurm-scheduler-lab
+      - name: Install slurm-scheduler-lab
+        run: |
+          python -m venv .lab-venv
+          .lab-venv/bin/pip install --quiet ./slurm-scheduler-lab
+          git -C slurm-scheduler-lab log -1 --format='slurm-scheduler-lab at %H'
+      - name: Re-derive the scheduler numbers (about 3 minutes)
+        run: python scripts/check_profile.py reproduce --schedlab .lab-venv/bin/schedlab

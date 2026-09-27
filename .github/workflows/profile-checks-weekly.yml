@@ -1,0 +1,23 @@
+name: profile-checks-weekly
+
+# Runs profile-checks.yml once a week, to catch drift in the linked repos when
+# nothing has pushed to this one and no linked repo has sent a dispatch.
+#
+# In a public repository "scheduled workflows are automatically disabled when
+# no repository activity has occurred in 60 days"
+# (https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/disabling-and-enabling-a-workflow).
+# That is why the schedule lives in this file on its own: when GitHub disables
+# it, profile-checks.yml keeps its push, pull_request, workflow_dispatch and
+# repository_dispatch triggers. Re-enable this one from the Actions tab or with
+# `gh workflow enable profile-checks-weekly.yml`.
+
+on:
+  schedule:
+    - cron: "23 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    uses: ./.github/workflows/profile-checks.yml

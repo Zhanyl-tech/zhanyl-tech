@@ -1,0 +1,442 @@
+# Claims in README.md that are checked against their sources.
+#
+# This is not every claim in the README that depends on another repo. Text with
+# no entry here is not checked by anything, so a number or status added to the
+# README should be added here too.
+#
+# Why this file exists: every number in the profile used to be hand-copied from
+# another repo, and an audit (September 2026) found that the headline numbers
+# depended on an undisclosed seed and that pinned-repo descriptions had drifted
+# from the READMEs behind them. A profile whose brand is "measured versus
+# asserted" cannot carry numbers that nothing re-checks.
+#
+# scripts/check_profile.py reads this file. For every claim:
+#   - `profile` must appear in README.md (whitespace-normalised). So while an
+#     entry stays here, its README text cannot be edited or removed without
+#     editing the entry too. The reverse is not checked: deleting an entry
+#     leaves its README text unchecked;
+#   - kind = "source": each `expect` must appear in `path` of `repo` on that
+#     repo's default branch (or in a local checkout with --local). The default
+#     branch, not a pinned commit, because that is what a reader who follows
+#     the link sees;
+#   - kind = "url": each `expect` must appear in the page at `url`
+#     (upstream documentation the profile relies on);
+#   - kind = "reproduce": every number in `profile` must also be in `expect`
+#     (the claims step), and each `expect` must appear in the output of
+#     scripts/reproduce_scheduler_claims.py (the `reproduce` step, which needs
+#     slurm-scheduler-lab installed).
+#
+# Text is compared after collapsing whitespace and stripping blockquote
+# markers, so line wrapping in either README does not matter.
+
+owner = "Zhanyl-tech"
+
+# Used only by the reproduce job in .github/workflows/profile-checks.yml. It
+# always re-derives the numbers on slurm-scheduler-lab's default branch, which
+# is what a reader who installs the lab gets. When a commit is pinned here it
+# also re-derives them at that commit, the one they were taken from. Links and
+# source claims ignore this table and always read the default branch.
+#
+# OWNER: nothing is pinned yet, because the numbers come from uncommitted
+# improve/2026-09 work (see the OWNER notes in README.md). After merging it,
+# set this to the merge commit's SHA.
+[refs]
+slurm-scheduler-lab = ""
+
+# ── scheduling evaluation ──────────────────────────────────────────────────
+
+[[claim]]
+id = "scheduler-headline"
+profile = "enabling it moved CPU utilisation 72.3% → 83.0% and mean wait 1896.7 → 396.1 min"
+kind = "reproduce"
+expect = ["compare-backfill seed 5: cpu utilization 72.3% -> 83.0%, mean wait 1896.7 -> 396.1 min"]
+
+[[claim]]
+id = "scheduler-headline-source"
+profile = "`schedlab --compare-backfill --jobs 300 --seed 5`"
+kind = "source"
+repo = "slurm-scheduler-lab"
+path = "README.md"
+expect = [
+  "schedlab --compare-backfill --jobs 300 --seed 5",
+  "trace: synthetic (seed=5)",
+  "cpu utilization 72.3 %",
+  "cpu utilization 83.0 %",
+  "mean wait 1896.7 min",
+  "mean wait 396.1 min",
+  "No live controller behind any number here.",
+]
+
+[[claim]]
+id = "scheduler-fleet"
+profile = "16 nodes × 8 CPU / 2 GPU, conservative backfill, Fair Tree"
+kind = "source"
+repo = "slurm-scheduler-lab"
+path = "README.md"
+expect = ["300 jobs · 16 nodes × 8 CPU / 2 GPU", "model: conservative backfill · fairshare fair_tree"]
+
+[[claim]]
+id = "scheduler-backfill-range"
+profile = "across seeds 0–9 it cut mean wait 2.2x-5.7x"
+kind = "reproduce"
+expect = ["backfill mean-wait cut, seeds 0-9: 2.2x-5.7x"]
+
+[[claim]]
+id = "scheduler-weight-age"
+profile = "at most 1.26x for age"
+kind = "reproduce"
+expect = ["age 1.01x-1.26x"]
+
+[[claim]]
+id = "scheduler-weight-others"
+profile = "by 1.13x-1.84x for fairshare, 1.50x-2.81x for QOS and 2.15x-3.87x for job size"
+kind = "reproduce"
+expect = ["fairshare 1.13x-1.84x", "qos 1.50x-2.81x", "jobsize 2.15x-3.87x"]
+
+[[claim]]
+id = "scheduler-exact-limits"
+profile = "raised CPU utilisation on 7/10 seeds but also raised mean wait on 9/10"
+kind = "reproduce"
+expect = ["mean wait higher on 9/10, cpu utilization higher on 7/10"]
+
+[[claim]]
+id = "scheduler-exact-limits-source"
+profile = "Setting every limit equal to its job's runtime"
+kind = "source"
+repo = "slurm-scheduler-lab"
+path = "README.md"
+expect = ["exact limits raised utilization on 7 of 10 seeds. They also raised mean wait on 9 of 10"]
+
+[[claim]]
+id = "k8s-status"
+profile = "**Built:** K0 (default kube-scheduler) and four degenerate baselines"
+kind = "source"
+repo = "k8s-gpu-scheduler-lab"
+path = "README.md"
+expect = [
+  "| **K0** | default `kube-scheduler` + device plugin | **built** |",
+  "| K1 | + Kueue (quota, admission) | planned |",
+  "| K2 | + Volcano (gang, DRF) | planned |",
+  "| K4 | NVIDIA KAI + DRA | planned |",
+  "| D-preempt |",
+  "No cluster run has been made with the Phase 2 harness yet",
+]
+
+[[claim]]
+id = "k8s-fragmentation"
+profile = "largest-first baseline scored **0.0%** fragmentation under a queue-relative definition and **55.6%** under a queue-independent one"
+kind = "source"
+repo = "k8s-gpu-scheduler-lab"
+path = "README.md"
+expect = ["reports 0.0% fragmentation under definition A** and 55.6% under definition B"]
+
+[[claim]]
+id = "k8s-run2"
+profile = "Run 2, 800 jobs / 1201 pods on a 140-GPU heterogeneous fleet, Phase 1 harness"
+kind = "source"
+repo = "k8s-gpu-scheduler-lab"
+path = "README.md"
+expect = ["### Run 2 — 800 jobs / 1201 pods, 140-GPU heterogeneous fleet", "every cluster number below is Phase 1's"]
+
+[[claim]]
+id = "k8s-34-unverified"
+profile = "the \"34% at KubeCon EU 2026\" figure the lab was started to test, whose source I could not verify"
+kind = "source"
+repo = "k8s-gpu-scheduler-lab"
+path = "README.md"
+expect = ["is **unverified**, in both its value and its attribution"]
+
+[[claim]]
+id = "k8s-34-sources"
+profile = "reports node counts (18 → 214 nodes with all four GPUs free), not a percentage"
+kind = "source"
+repo = "k8s-gpu-scheduler-lab"
+path = "README.md"
+expect = [
+  "nodes with all four GPUs free: **18 → 214**",
+  "it contains no percentage reduction in fragmentation",
+  "The only place I found it is a third-party blog post ([Gheware, 2026-05-13][gheware]) that names no talk, speaker, slides or recording.",
+]
+
+# ── GPU fleet health ───────────────────────────────────────────────────────
+
+[[claim]]
+id = "gpu-reaper-guards"
+profile = "A gap between observations longer than `max_sample_gap`, which with the defaults means any failed collection cycle, restarts the escalation from the first alert. It cancels only after a drain that was executed and confirmed at least one window earlier."
+kind = "source"
+repo = "gpu-reaper"
+path = "README.md"
+expect = [
+  "Status: v0.x, not yet run on a real cluster.",
+  "Cancel needs a drain that was *executed and confirmed* at least one `window` earlier.",
+  "larger than `max_sample_gap`, or a newest sample older than that, resets the breach clock *and* the escalation history.",
+  "With the defaults (interval 2m, gap 3m) any failed cycle leaves such a hole.",
+  "climbed again from Alert.",
+  "The DCGM source has not been run against a real dcgm-exporter;",
+]
+
+[[claim]]
+id = "epilog-status"
+profile = "built · not validated on hardware"
+kind = "source"
+repo = "epilog-gpu-validator"
+path = "README.md"
+expect = ["Status: not yet validated on real hardware."]
+
+[[claim]]
+id = "epilog-query-failure"
+profile = "A GPU query that fails or times out keeps the node in service; `nvidia-smi`'s documented hardware-fault exits (8, 10, 14, 15) count as evidence."
+kind = "source"
+repo = "epilog-gpu-validator"
+path = "README.md"
+expect = [
+  "If `nvidia-smi` is missing, times out, or returns something unparseable, that is a **monitoring** failure.",
+  "| `nvidia-smi` exits 8, 10, 14 or 15 | fatal |",
+]
+
+[[claim]]
+id = "ib-status"
+profile = "not yet run on IB hardware or a 26.05 node"
+kind = "source"
+repo = "ib-slurm-exporter"
+path = "README.md"
+expect = ["It has **not** been run on InfiniBand hardware or on a Slurm 26.05 node."]
+
+[[claim]]
+id = "ib-visible-sharing"
+profile = "withholds the job label on any port it can see is shared. In its default mode, kernel RDMA users (NFS/RDMA, Lustre o2ib, IPoIB) are invisible to it"
+kind = "source"
+repo = "ib-slurm-exporter"
+path = "README.md"
+expect = [
+  "**Only** for a port on which the job is the only user the exporter can see",
+  "Kernel RDMA users whose QPs go through ib_core (NFS/RDMA, Lustre o2ib, iSER, non-enhanced IPoIB) | **invisible**",
+]
+
+[[claim]]
+id = "ib-sluid"
+profile = "Handles Slurm 26.05's SLUID-keyed cgroup paths."
+kind = "source"
+repo = "ib-slurm-exporter"
+path = "README.md"
+expect = ["Slurm cgroup/v2 paths are now constructed using the SLUID instead of the numeric job id."]
+
+[[claim]]
+id = "slinky-rotation"
+profile = "Slurm 26.05 on Kubernetes through Slinky v1.2 on kind, with CI. On Slinky v1.2 the auth-key rotation does not currently take."
+kind = "source"
+repo = "slinky-gitops"
+path = "README.md"
+expect = [
+  "Slinky v1.2 ships Slurm 26.05",
+  "Status: the rotation does not currently succeed on Slinky v1.2.",
+  "and exits 3",
+  "Not re-run on a cluster since the September 2026 changes.",
+  "One nodeset, one replica.",
+  "No GitOps controller.",
+  "it has not been filed",
+]
+
+# What CI on kind observed, which predates the exit-3 rewrite. The runs are
+# the last three rows of slinky-gitops' "What CI caught" table.
+[[claim]]
+id = "slinky-ci-runs"
+profile = "In three kind CI runs (commits `8e742be` to `c51903a`) the rotation exited non-zero instead of reporting success, and the cluster ran a job afterwards; the run logs, which would show the rollback, were not re-read."
+kind = "source"
+repo = "slinky-gitops"
+path = "README.md"
+expect = [
+  "| `8e742be` | success | rotation step \"✓\": exited non-zero after 404 s; job ran afterwards |",
+  "| `044e01c` | success | same (410 s) |",
+  "| `c51903a` | success | same (419 s) |",
+  "so its \"✓\" means only that the rotation exited non-zero",
+  "so the table does not claim which check fired",
+]
+
+# The exit-3 contract has run only offline, and the CI step that asserts it
+# has not run. Both README passages that say so are pinned, so the caveat
+# cannot drop out of one.
+[[claim]]
+id = "slinky-rewrite-offline-only"
+profile = "So far the script has run only in offline tests against a fake `kubectl`, and the new CI step has not run at all."
+kind = "source"
+repo = "slinky-gitops"
+path = "README.md"
+expect = [
+  "Not re-run on a cluster since the September 2026 changes.",
+  "covered by the offline tests (against a fake kubectl)",
+  "the new steps of the KinD CI job are not exercised by anything offline",
+  "make test # offline: the rotation script against a fake kubectl",
+]
+
+[[claim]]
+id = "slinky-finding-offline-only"
+profile = "It has so far run only in offline tests against a fake `kubectl`; the kind job has not run it yet."
+kind = "source"
+repo = "slinky-gitops"
+path = "README.md"
+expect = [
+  "Not re-run on a cluster since the September 2026 changes.",
+  "the KinD job has to run once before any of this counts as proven on a real cluster",
+]
+
+# ── agentic operations ─────────────────────────────────────────────────────
+
+[[claim]]
+id = "rca-scenarios"
+profile = "10 scenarios are designed and 6 are runnable. 2 have causal chains measured on a live Slurm 25.11.4 control plane in Docker; the 0.2.0 injection and heal fixes have not been re-run on that cluster."
+kind = "source"
+repo = "slurm-rca-bench"
+path = "README.md"
+expect = [
+  "Ten scenarios designed: six are runnable and four are blocked.",
+  "No changed injection has been run on the emulated cluster since.",
+  "*Empty. Nothing has been measured yet.*",
+]
+
+[[claim]]
+id = "rca-floor"
+profile = "Over the 6 runnable scenarios the same constant answer now scores 0.333"
+kind = "source"
+repo = "slurm-rca-bench"
+path = "README.md"
+expect = [
+  "0.333 0.222 always-db.mysql <- floor",
+  "scored **0.290**",
+  "dropped it to **0.145** over ten",
+  "Over the designed ten it would be 0.200",
+  "The degeneracy test is now a strict expected failure",
+]
+
+[[claim]]
+id = "rca-s01"
+profile = "slurmctld's DBD agent queue reached 6 and flushed on recovery"
+kind = "source"
+repo = "slurm-rca-bench"
+path = "README.md"
+expect = [
+  "DBD Agent queue size 6 and climbing; sbatch still accepted",
+  "jobs 4 and 5 both COMPLETED",
+  "S01 now gives full credit to `db.mysql`",
+  "Everything is pinned to Slurm 25.11.4.",
+]
+
+[[claim]]
+id = "rca-s01-duration"
+profile = "for about 15 minutes"
+kind = "source"
+repo = "slurm-rca-bench"
+path = "README.md"
+expect = ["t+900s submitted jobs reach the node and run", "heal+10s sacct returns"]
+
+[[claim]]
+id = "rca-s01-runs"
+profile = "The database stall was probed in full in one emulated run, and a second run confirmed the queue growth; the unwritable state was one run."
+kind = "source"
+repo = "slurm-rca-bench"
+path = "README.md"
+expect = [
+  "6 at t+180s in one run and t+840s in the other",
+  "These probes were run by hand and their raw transcript was not committed",
+]
+
+[[claim]]
+id = "rca-s01-latency"
+profile = "though job start latency rose to tens of seconds"
+kind = "source"
+repo = "slurm-rca-bench"
+path = "README.md"
+expect = ["Job start latency degrades to tens of seconds"]
+
+# One submission was attempted during the fault, so the profile must not say
+# "every". The observations are in the scenario file, not the README.
+[[claim]]
+id = "rca-s06"
+profile = "the one submission attempted during the fault was rejected at once with an I/O error, and no backlog built up"
+kind = "source"
+repo = "slurm-rca-bench"
+path = "scenarios/S06-state-save-unwritable/scenario.yaml"
+expect = [
+  "chmod 500 applied; submission attempted; chmod 755 restored; submission re-attempted",
+  "sbatch rejected: 'I/O error writing script/environment to file' — no JobID issued",
+  "queue stays empty; no pending backlog accumulates",
+]
+
+[[claim]]
+id = "maxdbdmsgs"
+profile = "with a limit\nof at least 10000"
+kind = "url"
+url = "https://slurm.schedmd.com/slurm.conf.html"
+expect = ["When communication to the SlurmDBD is not possible the slurmctld will queue messages", "can not be less than 10000"]
+
+[[claim]]
+id = "kubectl-rollout-types"
+profile = "documented resource types are deployments, daemonsets and statefulsets"
+kind = "url"
+url = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_rollout/"
+expect = ["deployments", "daemonsets", "statefulsets"]
+
+[[claim]]
+id = "slurm-mcp"
+profile = "tested with 70 adversarial argv"
+kind = "source"
+repo = "slurm-mcp"
+path = "README.md"
+expect = ["The tests drive the guard with 70 adversarial argv", "It has not been run against a real Slurm cluster"]
+
+[[claim]]
+id = "slurm-mcp-tools"
+profile = "it exposes three tools with progressive disclosure"
+kind = "source"
+repo = "slurm-mcp"
+path = "README.md"
+expect = ["This server exposes **three** tools", "the tool surface uses progressive disclosure"]
+
+[[claim]]
+id = "cluster-ops-skills"
+profile = "11 runbooks (10 for Slurm, 1 for Slinky)"
+kind = "source"
+repo = "cluster-ops-skills"
+path = "README.md"
+expect = ["Eleven runbooks, a validator", "`slinky-authkey-rotation`", "**Not scored.**"]
+
+[[claim]]
+id = "cluster-sre-agent"
+profile = "the graph (12 edges, 4 measured on the benchmark's cluster)"
+kind = "source"
+repo = "cluster-sre-agent"
+path = "README.md"
+expect = ["12 edges, 4 measured (33%)", "no diagnosis accuracy has been measured"]
+
+[[claim]]
+id = "research-platform"
+profile = "It is Phase 1 of\n6; feature lineage and leakage detection are planned."
+kind = "source"
+repo = "research-platform"
+path = "README.md"
+expect = ["Phase 1 of 6 is complete: the point-in-time data layer."]
+
+[[claim]]
+id = "research-platform-mypy"
+profile = "is checked with `mypy --strict`"
+kind = "source"
+repo = "research-platform"
+path = "README.md"
+expect = ["**Python 3.11+, `mypy --strict`, `ruff`, `pytest`**"]
+
+# ── writing ────────────────────────────────────────────────────────────────
+
+# The Writing entry links the corrected post by its corrected title, and says
+# the original claim failed across seeds on the original code too.
+[[claim]]
+id = "post-corrected"
+profile = "Slurm Backfill vs. Priority Weights on a Synthetic Workload: What One Seed Showed, and What Twenty Did Not"
+kind = "source"
+repo = "zhanyl-tech.github.io"
+path = "content/experiments/2026-07-26-slurm-backfill-time-limits.md"
+expect = [
+  "title: \"Slurm Backfill vs. Priority Weights on a Synthetic Workload: What One Seed Showed, and What Twenty Did Not\"",
+  "Correction, 26 September 2026.",
+  "Over seeds 0–19 of the same code",
+  "on 3 of the 20 seeds the weight sweep moved mean wait more than turning backfill on did",
+]
