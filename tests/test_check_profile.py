@@ -120,6 +120,52 @@ class DefaultBranch(CheckerTestCase):
         self.assertEqual(cp.DEFAULT_BRANCH, "HEAD")
 
 
+class BotBlockingHosts(CheckerTestCase):
+    """X answers GitHub's runners 403 for a profile that exists, which failed
+    CI on a working link. Only a host's own blocking status is excused: a 404
+    there is still a broken link, and a 403 from any other host still fails."""
+
+    def check_link(self, url: str, status: int) -> tuple[list[str], list[str]]:
+        cp.failures.clear()
+        cp.warnings.clear()
+        self.with_readme(f"[link]({url})\n")
+        with mock.patch.object(cp, "fetch", return_value=(status, "")):
+            self.run_quietly(cp.check_links, {"owner": "Zhanyl-tech"}, None)
+        return list(cp.failures), list(cp.warnings)
+
+    def assert_unverified(self, url: str, status: int) -> None:
+        failures, warnings = self.check_link(url, status)
+        self.assertEqual(failures, [])
+        self.assertEqual(len(warnings), 1)
+        self.assertIn(f"HTTP {status}", warnings[0])
+        self.assertIn("unverified", warnings[0])
+
+    def assert_broken(self, url: str, status: int) -> None:
+        failures, warnings = self.check_link(url, status)
+        self.assertEqual(warnings, [])
+        self.assertEqual(failures, [f"{url}: HTTP {status}"])
+
+    def test_x_403_is_unverified(self) -> None:
+        for url in ("https://x.com/ZhanylAbd", "https://twitter.com/ZhanylAbd", "https://www.x.com/ZhanylAbd"):
+            with self.subTest(url=url):
+                self.assert_unverified(url, 403)
+
+    def test_x_404_fails(self) -> None:
+        self.assert_broken("https://x.com/ZhanylAbd", 404)
+
+    def test_linkedin_999_is_unverified(self) -> None:
+        self.assert_unverified("https://www.linkedin.com/in/za-engineering/", 999)
+
+    def test_linkedin_404_fails(self) -> None:
+        # Any non-200 from LinkedIn used to be excused.
+        self.assert_broken("https://www.linkedin.com/in/za-engineering/", 404)
+
+    def test_other_host_403_fails(self) -> None:
+        for url in ("https://example.com/page", "https://notx.com/ZhanylAbd", "https://x.com.example.net/"):
+            with self.subTest(url=url):
+                self.assert_broken(url, 403)
+
+
 class ReproduceFailures(CheckerTestCase):
     """A failed reproduce run used to print only CalledProcessError and an exit
     status; the reason (schedlab's stderr) never reached the log."""
