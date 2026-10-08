@@ -241,14 +241,14 @@ expect = [
 # the last three rows of slinky-gitops' "What CI caught" table.
 [[claim]]
 id = "slinky-ci-runs"
-profile = "In three kind CI runs (commits `8e742be` to `c51903a`) the rotation exited non-zero instead of reporting success, and the cluster ran a job afterwards; the run logs, which would show the rollback, were not re-read."
+profile = "In three kind CI runs (commits `82a66ad` to `033a535`) the rotation exited non-zero instead of reporting success, and the cluster ran a job afterwards; the run logs, which would show the rollback, were not re-read."
 kind = "source"
 repo = "slinky-gitops"
 path = "README.md"
 expect = [
-  "| `8e742be` | success | rotation step \"✓\": exited non-zero after 404 s; job ran afterwards |",
-  "| `044e01c` | success | same (410 s) |",
-  "| `c51903a` | success | same (419 s) |",
+  "| `82a66ad` | success | rotation step \"✓\": exited non-zero after 404 s; job ran afterwards |",
+  "| `6caade2` | success | same (410 s) |",
+  "| `033a535` | success | same (419 s) |",
   "so its \"✓\" means only that the rotation exited non-zero",
   "so the table does not claim which check fired",
 ]

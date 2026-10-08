@@ -1,10 +1,10 @@
 ### Zhanyl — GPU cluster scheduling and fleet health, on Slurm and Kubernetes
 
-
 <!-- OWNER: almost every line below describes work that exists only as uncommitted changes on the improve/2026-09 branch of the repo it links to. On 2026-09-26 all eleven linked repos and zhanyl-tech.github.io had them, and each one's HEAD was still its origin/main. Commit and merge all of them before publishing this README, or most linked repos will contradict it. `python scripts/check_profile.py claims` (without --local) reads each repo's default branch, so it fails until they are merged. -->
 
-I build the systems that allocate scarce, expensive, heterogeneous compute —
-and the benchmarks that check whether they actually work.
+I build open-source tools around the schedulers that allocate scarce,
+expensive, heterogeneous compute — and the benchmarks that check whether they
+actually work.
 
 Each repo below has a status: **built** (code and tests exist), **partial**
 (part of it is built and the rest is marked planned), or **planned** (nothing
@@ -37,7 +37,7 @@ These tools share one rule: **never act on absent evidence.**
 | **[gpu-reaper](https://github.com/Zhanyl-tech/gpu-reaper)** | built · not yet run on a cluster | Finds Slurm GPU allocations doing no work, and drains or cancels them only if you enable it. It only observes by default. Missing, stale or unreadable telemetry is never read as idleness. A gap between observations longer than `max_sample_gap`, which with the defaults means any failed collection cycle, restarts the escalation from the first alert. It cancels only after a drain that was executed and confirmed at least one window earlier. It reads `nvidia-smi` or dcgm-exporter; the DCGM source is untested against a real exporter. Tested against a simulator, fake Slurm and NVIDIA binaries, and synthetic dcgm-exporter pages. |
 | **[epilog-gpu-validator](https://github.com/Zhanyl-tech/epilog-gpu-validator)** | built · not validated on hardware | A Slurm Epilog check of the GPUs a job just used. It drains a node only on findings it classes as fatal or degraded, and only with `--enforce`. A GPU query that fails or times out keeps the node in service; `nvidia-smi`'s documented hardware-fault exits (8, 10, 14, 15) count as evidence. It keeps no history, so "persistent" is a judgement about the fault class, not an observation over time. Exercised against simulated `nvidia-smi` output and fake binaries. |
 | **[ib-slurm-exporter](https://github.com/Zhanyl-tech/ib-slurm-exporter)** | built · synthetic sysfs only | Attributes InfiniBand/RoCE port counters to the Slurm job using the HCA, and withholds the job label on any port it can see is shared. In its default mode, kernel RDMA users (NFS/RDMA, Lustre o2ib, IPoIB) are invisible to it, so it cannot see them sharing a port. Handles Slurm 26.05's SLUID-keyed cgroup paths. Tested against synthetic `/sys`, `/proc` and cgroup trees; not yet run on IB hardware or a 26.05 node. |
-| **[slinky-gitops](https://github.com/Zhanyl-tech/slinky-gitops)** | partial | Slurm 26.05 on Kubernetes through Slinky v1.2 on kind, with CI. On Slinky v1.2 the auth-key rotation does not currently take. In three kind CI runs (commits `8e742be` to `c51903a`) the rotation exited non-zero instead of reporting success, and the cluster ran a job afterwards; the run logs, which would show the rollback, were not re-read. The September 2026 rewrite hashes the key in every slurmd pod and in slurmctld, exits 3 after a verified rollback, and has a CI step assert that exit. So far the script has run only in offline tests against a fake `kubectl`, and the new CI step has not run at all. One NodeSet, no GPUs. The "GitOps" is still planned: no Argo CD yet. |
+| **[slinky-gitops](https://github.com/Zhanyl-tech/slinky-gitops)** | partial | Slurm 26.05 on Kubernetes through Slinky v1.2 on kind, with CI. On Slinky v1.2 the auth-key rotation does not currently take. In three kind CI runs (commits `82a66ad` to `033a535`) the rotation exited non-zero instead of reporting success, and the cluster ran a job afterwards; the run logs, which would show the rollback, were not re-read. The September 2026 rewrite hashes the key in every slurmd pod and in slurmctld, exits 3 after a verified rollback, and has a CI step assert that exit. So far the script has run only in offline tests against a fake `kubectl`, and the new CI step has not run at all. One NodeSet, no GPUs. The "GitOps" is still planned: no Argo CD yet. |
 
 ### Agentic operations, read-only first
 
@@ -79,7 +79,7 @@ limits.
 2 GPU, conservative backfill, Fair Tree. `schedlab --compare-backfill --jobs 300 --seed 5`,
 and the seed loops in [`scripts/reproduce_scheduler_claims.py`](scripts/reproduce_scheduler_claims.py). Run 2026-09-26.</sub>
 → [slurm-scheduler-lab](https://github.com/Zhanyl-tech/slurm-scheduler-lab#time-limits-what-accurate-requests-buy-measured)
-<!-- OWNER: these numbers come from slurm-scheduler-lab's improve/2026-09 working tree (base c02b52f plus uncommitted changes: conservative backfill and Fair Tree became the defaults). They were re-derived on 2026-09-26 by `scripts/check_profile.py reproduce` against that working tree, three times (identical output; the last run passed every reproduce check), after the lab's model changed again (model.py, cli.py, metrics.py, preempt.py and simulate.py under src/schedlab). The previous version of this paragraph quoted 89.9% / 442.5 min, 2.1x, 1.20x, 1.83x, 1.52x-2.63x, 2.16x-3.92x and utilisation up on 9/10 from the lab's earlier working tree; by the last run the lab's README had moved to the numbers above. Its main branch still prints the old 72.2% → 83.6% / 1913.0 → 373.7 min. Merge that branch before publishing this README (see the merge note at the top), re-run the reproduce step if the model changes again, then set `slurm-scheduler-lab` under `[refs]` in claims.toml to the merge commit, so the reproduce job re-derives these numbers at the commit they came from as well as on main. -->
+<!-- OWNER: these numbers come from slurm-scheduler-lab's improve/2026-09 working tree (base 8c83324 plus uncommitted changes: conservative backfill and Fair Tree became the defaults). They were re-derived on 2026-09-26 by `scripts/check_profile.py reproduce` against that working tree, three times (identical output; the last run passed every reproduce check), after the lab's model changed again (model.py, cli.py, metrics.py, preempt.py and simulate.py under src/schedlab). The previous version of this paragraph quoted 89.9% / 442.5 min, 2.1x, 1.20x, 1.83x, 1.52x-2.63x, 2.16x-3.92x and utilisation up on 9/10 from the lab's earlier working tree; by the last run the lab's README had moved to the numbers above. Its main branch still prints the old 72.2% → 83.6% / 1913.0 → 373.7 min. Merge that branch before publishing this README (see the merge note at the top), re-run the reproduce step if the model changes again, then set `slurm-scheduler-lab` under `[refs]` in claims.toml to the merge commit, so the reproduce job re-derives these numbers at the commit they came from as well as on main. -->
 
 **"A GPU fragmentation percentage is one number."** On one kind + kwok run
 (a real Kubernetes control plane, simulated GPU nodes, n=1), the
@@ -105,8 +105,8 @@ documented resource types are deployments, daemonsets and statefulsets
 So slurmctld adopted a rotated auth key while slurmd kept the old one, and my
 rotation script reported success on a cluster that could not run a job. Fixing
 that exposed a harder failure: a newly created slurmd pod still mounted the
-*previous* key. In three later CI runs on kind (commits `8e742be` to
-`c51903a`) the rotation exited non-zero instead of reporting success, and the
+*previous* key. In three later CI runs on kind (commits `82a66ad` to
+`033a535`) the rotation exited non-zero instead of reporting success, and the
 cluster ran a job afterwards. The September 2026 rewrite hashes the key in
 every slurmd pod and in slurmctld, exits 3 after a verified rollback, and has
 CI assert that exit. It has so far run only in offline tests against a fake
@@ -146,7 +146,7 @@ scenarios the same constant answer now scores 0.333, above the suite's own 0.25
 threshold. The test that enforces the threshold is a strict expected failure
 until new runnable scenarios fix the suite. Publishing a score without that
 floor tells the reader nothing.
-<sub>`slurm-rca baselines`, run 2026-09-26: 0.333 over 6 runnable scenarios (0.200 with `--include-blocked`). 0.290 (its S01–S05) and 0.145 recomputed at commit 469ea76, before the corrections.</sub>
+<sub>`slurm-rca baselines`, run 2026-09-26: 0.333 over 6 runnable scenarios (0.200 with `--include-blocked`). 0.290 (its S01–S05) and 0.145 recomputed at commit 9e15ae5, before the corrections.</sub>
 → [slurm-rca-bench](https://github.com/Zhanyl-tech/slurm-rca-bench#baselines--the-number-to-ask-for-first)
 
 ---
@@ -164,7 +164,7 @@ dives on HPC and inference, plus shorter lab notes on whatever I'm currently
 measuring.
 
 - [Slurm Backfill vs. Priority Weights on a Synthetic Workload: What One Seed Showed, and What Twenty Did Not](https://zhanyl-tech.github.io/experiments/2026-07-26-slurm-backfill-time-limits/) (July 2026, **corrected** September 2026). The original claimed that priority weights barely matter. That came from one synthetic seed, and across 20 seeds it does not hold, on the original simulator code as well as the current one. See the first finding above.
-  <!-- OWNER: two things are still outstanding. (1) The correction is in zhanyl-tech.github.io's uncommitted improve/2026-09 changes; on 2026-09-26 the live page still carried the old title, "Your Slurm Priority Weights Matter Less Than Your Users' Time Limits". Deploy it before publishing this entry. (2) cluster-ops-skills' backfill-not-running runbook still has a section headed "Why time limits come first", with its figures pinned to slurm-scheduler-lab c02b52f, while the September version of that simulator has exact limits raising mean wait on 9 of 10 seeds (the first finding above). Remove this note once both are done. -->
+  <!-- OWNER: two things are still outstanding. (1) The correction is in zhanyl-tech.github.io's uncommitted improve/2026-09 changes; on 2026-09-26 the live page still carried the old title, "Your Slurm Priority Weights Matter Less Than Your Users' Time Limits". Deploy it before publishing this entry. (2) cluster-ops-skills' backfill-not-running runbook still has a section headed "Why time limits come first", with its figures pinned to slurm-scheduler-lab 8c83324, while the September version of that simulator has exact limits raising mean wait on 9 of 10 seeds (the first finding above). Remove this note once both are done. -->
 - [LServe and SampleAttention: what sparse attention actually changes](https://zhanyl-tech.github.io/blog/2026-01-30-lserve-sampleattention-sparse-attention/)
 - [How KV-cache paging works in vLLM](https://zhanyl-tech.github.io/blog/2026-01-15-kv-cache-paging-vllm/)
 
