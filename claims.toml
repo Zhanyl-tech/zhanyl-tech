@@ -37,11 +37,9 @@ owner = "Zhanyl-tech"
 # also re-derives them at that commit, the one they were taken from. Links and
 # source claims ignore this table and always read the default branch.
 #
-# OWNER: nothing is pinned yet, because the numbers come from uncommitted
-# improve/2026-09 work (see the OWNER notes in README.md). After merging it,
-# set this to the merge commit's SHA.
+# The scheduler numbers were derived from the work merged as 9821c1e.
 [refs]
-slurm-scheduler-lab = ""
+slurm-scheduler-lab = "9821c1e8e0fb779881ecdf2d894597d22f607de3"
 
 # ── scheduling evaluation ──────────────────────────────────────────────────
 

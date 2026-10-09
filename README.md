@@ -1,18 +1,24 @@
-### Zhanyl — GPU cluster scheduling and fleet health, on Slurm and Kubernetes
+### Zhanyl Abdybaeva — HPC & GPU infrastructure engineer · Slurm, Kubernetes, GPU fleet health
 
-<!-- OWNER: almost every line below describes work that exists only as uncommitted changes on the improve/2026-09 branch of the repo it links to. On 2026-09-26 all eleven linked repos and zhanyl-tech.github.io had them, and each one's HEAD was still its origin/main. Commit and merge all of them before publishing this README, or most linked repos will contradict it. `python scripts/check_profile.py claims` (without --local) reads each repo's default branch, so it fails until they are merged. -->
+I build the systems that allocate scarce, expensive, heterogeneous compute —
+and the benchmarks that check whether they actually work.
 
-I build open-source tools around the schedulers that allocate scarce,
-expensive, heterogeneous compute — and the benchmarks that check whether they
-actually work.
+**Slurm** (multifactor priority, Fair Tree, backfill, preemption, epilog) ·
+**Kubernetes** (kube-scheduler, operators, Slurm on Kubernetes via Slinky) ·
+**GPU fleet health** (`nvidia-smi` fault classes, DCGM, MIG) ·
+**InfiniBand/RoCE** · **Prometheus** · **Linux** · **Go** · **Python**
 
-Each repo below has a status: **built** (code and tests exist), **partial**
+Ten years of production infrastructure · MS CS (Machine Learning) @ Georgia
+Tech · CQF · NVIDIA NCP-AIO
+
+Everything below is independent work: coursework, CQF projects and my own
+research. Each repo has a status: **built** (code and tests exist), **partial**
 (part of it is built and the rest is marked planned), or **planned** (nothing
 exists yet). Each number says how it was produced. None of them comes from a
 GPU or a production cluster. Where a live control plane was involved, the line
 says which one.
 
-[Website](https://zhanyl-tech.github.io) · [LinkedIn](https://www.linkedin.com/in/za-engineering/) · [X](https://x.com/ZhanylAbd)
+[Website](https://zhanyl-tech.github.io) · [LinkedIn](https://www.linkedin.com/in/za-engineering/) · [X](https://x.com/ZhanylAbd) · [Contact](https://zhanyl-tech.github.io/contact/)
 
 ---
 
@@ -79,7 +85,6 @@ limits.
 2 GPU, conservative backfill, Fair Tree. `schedlab --compare-backfill --jobs 300 --seed 5`,
 and the seed loops in [`scripts/reproduce_scheduler_claims.py`](scripts/reproduce_scheduler_claims.py). Run 2026-09-26.</sub>
 → [slurm-scheduler-lab](https://github.com/Zhanyl-tech/slurm-scheduler-lab#time-limits-what-accurate-requests-buy-measured)
-<!-- OWNER: these numbers come from slurm-scheduler-lab's improve/2026-09 working tree (base 8c83324 plus uncommitted changes: conservative backfill and Fair Tree became the defaults). They were re-derived on 2026-09-26 by `scripts/check_profile.py reproduce` against that working tree, three times (identical output; the last run passed every reproduce check), after the lab's model changed again (model.py, cli.py, metrics.py, preempt.py and simulate.py under src/schedlab). The previous version of this paragraph quoted 89.9% / 442.5 min, 2.1x, 1.20x, 1.83x, 1.52x-2.63x, 2.16x-3.92x and utilisation up on 9/10 from the lab's earlier working tree; by the last run the lab's README had moved to the numbers above. Its main branch still prints the old 72.2% → 83.6% / 1913.0 → 373.7 min. Merge that branch before publishing this README (see the merge note at the top), re-run the reproduce step if the model changes again, then set `slurm-scheduler-lab` under `[refs]` in claims.toml to the merge commit, so the reproduce job re-derives these numbers at the commit they came from as well as on main. -->
 
 **"A GPU fragmentation percentage is one number."** On one kind + kwok run
 (a real Kubernetes control plane, simulated GPU nodes, n=1), the
@@ -164,17 +169,15 @@ dives on HPC and inference, plus shorter lab notes on whatever I'm currently
 measuring.
 
 - [Slurm Backfill vs. Priority Weights on a Synthetic Workload: What One Seed Showed, and What Twenty Did Not](https://zhanyl-tech.github.io/experiments/2026-07-26-slurm-backfill-time-limits/) (July 2026, **corrected** September 2026). The original claimed that priority weights barely matter. That came from one synthetic seed, and across 20 seeds it does not hold, on the original simulator code as well as the current one. See the first finding above.
-  <!-- OWNER: two things are still outstanding. (1) The correction is in zhanyl-tech.github.io's uncommitted improve/2026-09 changes; on 2026-09-26 the live page still carried the old title, "Your Slurm Priority Weights Matter Less Than Your Users' Time Limits". Deploy it before publishing this entry. (2) cluster-ops-skills' backfill-not-running runbook still has a section headed "Why time limits come first", with its figures pinned to slurm-scheduler-lab 8c83324, while the September version of that simulator has exact limits raising mean wait on 9 of 10 seeds (the first finding above). Remove this note once both are done. -->
 - [LServe and SampleAttention: what sparse attention actually changes](https://zhanyl-tech.github.io/blog/2026-01-30-lserve-sampleattention-sparse-attention/)
 - [How KV-cache paging works in vLLM](https://zhanyl-tech.github.io/blog/2026-01-15-kv-cache-paging-vllm/)
 
-<!-- OWNER: the previous README promised "a CUDA port of a volatility surface calibration"; the site's gpu-volatility-surface milestones (Jul and Sep 2026) have passed. Add it back, as planned, only if it still is. -->
 
 ### Background
 
-- **Education:** MS CS (Machine Learning) @ Georgia Tech · CQF (Quantitative Finance) · NVIDIA NCP-AIO <!-- OWNER: add the MS completion year or "(in progress, exp. YYYY)", and a public verification link for NCP-AIO if one exists. Neither is recorded in the workspace. -->
-- **Core stack:** Python, Go, PyTorch, CUDA, Kubernetes, Slurm
-- **Platform:** DCGM · MIG · NVLink/NVSwitch · InfiniBand · Prometheus
+- **Education:** MS CS (Machine Learning) @ Georgia Tech · CQF (Quantitative Finance) · NVIDIA NCP-AIO
+- **Core stack:** Python, Go, PyTorch, CUDA, Kubernetes, Slurm, Linux
+- **Platform:** DCGM · MIG · NVLink/NVSwitch · InfiniBand/RoCE · Prometheus
 - **Focus:** scheduling and resource allocation across Slurm and Kubernetes, GPU cluster reliability, inference infrastructure, and agentic operations
 
-<sub>Chess and poker outside of work — both good places to practise reasoning under uncertainty.</sub>
+<sub>Chess and poker outside of work — both cheaper places to practise reasoning under uncertainty than production is.</sub>
