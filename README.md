@@ -1,4 +1,4 @@
-### Zhanyl Abdybaeva — HPC & GPU infrastructure engineer · Slurm, Kubernetes, GPU fleet health
+### HPC & GPU infrastructure engineer · Slurm, Kubernetes, GPU fleet health
 
 I build the systems that allocate scarce, expensive, heterogeneous compute —
 and the benchmarks that check whether they actually work.
